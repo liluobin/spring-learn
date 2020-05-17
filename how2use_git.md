@@ -41,5 +41,31 @@ git reset --hard [reflog中的hash值]
     hard会更改工作区的文件，三个区域保持一致
 ```
 
+## diff的用法
+
+```java
+git diff [filename] //将工作区和缓存区比较
+git diff [本地库中的历史版本] [filename] //和本地库中的文件比较
+```
+
+## branch 
+
+```java
+//创建分支
+git branch [branchname]
+
+//查看分支
+git branch -v
+    
+//进入分支
+git checkout [branchname]
+    
+//合并分支
+git merge [branchname] //先进入master分支，然后用merge将分支合并到主分支
+    
+//解决冲突
+    //编辑文件删除特殊符号，修改到满意的程度，git commit 不能带文件名
+```
+
 
 
