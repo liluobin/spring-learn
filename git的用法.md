@@ -34,7 +34,11 @@ git log		//美化： git log --pretty=oneline
 git reflog
 
 //移动至指定版本
-git reset --hard [reflog中的hash值]
+git reset --hard [reflog中的hash值] 
+    //soft mixed hard 的区别
+    soft后需要commit
+    mixed后需要 add commit
+    hard会更改工作区的文件，三个区域保持一致
 ```
 
 
