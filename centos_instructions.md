@@ -95,7 +95,7 @@
 
 * 用户，组，家目录的关系
 
-![image-20200517220907014](F:\onedrive_data\OneDrive - zju.edu.cn\git\spring-learn\images\用户-组-家目录.png)
+![image-20200517220907014](.\images\用户-组-家目录.png)
 
 * 一个用户至少属于一个组
   * useradd [userid]	会自动创建[名为userid]的组	
@@ -119,7 +119,7 @@
 
 * /etc/passwd   用户配置信息
 
-  ![image-20200518154641013](F:\onedrive_data\OneDrive - zju.edu.cn\git\spring-learn\images\用户配置信息.png)
+  ![image-20200518154641013](.\images\用户配置信息.png)
 
 * /etc/shadow  密码配置文件（加密的形式）
 
@@ -275,7 +275,7 @@
 
   * 查看所有者 ls -ahl    
 
-    ![image-20200518180933756](F:\onedrive_data\OneDrive - zju.edu.cn\git\spring-learn\images\tom.png)
+    ![image-20200518180933756](.\images\tom.png)
 
   * 修改文件的所有者
 
@@ -306,11 +306,148 @@
   * rw- 表示文件所有者拥有的权限（r读，w写，x执行）
   * r-- 表示文件所在组的用户拥有的权限
   * 后面一个r--表示文件其他组用户拥有的权限
-  * 1 如果是文件表示硬连接的数，如果是目录表示该目录的子目录有多少
+  * 1 如果是文件表示硬连接的数，如果是目录表示该目录的子目录有多少（包括.和..）
   * tom 文件的所有者
   * police文件所在组
   * 0 表示文件大小，如果是目录则是4096
   * 5月 18 18：08 文件最后的修改时间
 
-* w代表文件可写，但是不能删除，除非w作用在目录上则可以删除文件
-* x作用在目录上则表示可以进入该目录，r作用在目录上可以ls查看
+* **w代表文件可写，但是不能删除，除非w作用在目录上则可以删除文件**
+* **x作用在目录上则表示可以进入该目录，r作用在目录上可以ls查看**
+
+* 权限管理，修改文件或者目录权限
+  * u代表所有者  g  所有组   o其他人   a所有人（a、g、u的总和）
+  * chmod u=wrx,g=rx.o=rw  ok.txt
+  * chmod u -x ,g +w  ok.txt  （添加写权限和删除执行权限）
+  * 规则： r=4,w=2,x=1
+    * chmod u=rwx,g=rx,o=x  ok.txt   相当于chmod 751 ok.txt   (rwx可以看做二进制位)
+
+* 修改文件的所有者-chown
+  * chown newowner  file  
+  * chown tom abc.txt  注意该用户是否有文件夹的写的权限
+  * chown -R tom afile/  修改文件夹所有文件的所有者为tom，注意要用root用户操作
+
+* 修改文件所在组 -chgrp
+  * chgrp newgroup file 
+  * chgrp -R newgroup  kkk/
+
+---
+
+## 定时任务调度
+
+* crontab -e增加任务调度  -l显示 -r删除     简单的任务可以不写脚本（shell）直接在crontab中写
+* crontab -e
+* */1 * * * * ls -l/etc>>/tmp/to.txt  （每分钟调用一次ls -l...代码）
+* crontab -r 删除任务
+* 第一个* 代表分钟（0~59）  第二个*代表小时（0~23）第三个\*代表天（1-31） 第四个\*代表月（1-12）  第五个代表一周当中星期几（1-7）
+* 特殊符号\* 代表任何时间   ，代表（1,2,3）中每个都取   -  （1-5）代表范围
+
+![image-20200518213344270](F:.\images\特殊符号的作用.png)
+
+* crond 任务调度
+  * 每隔一分钟就将当前的日期信息追加到tmp/mydate
+    * date>>tmp/mydate  创建/home/mytask.sh
+    * 开启用户对文件的执行权限 chmod 744 /home/mytask.sh
+    * crontab -e
+    * */1 * * * *  /home/mytask.sh  设置定时调用脚本
+
+* 每天凌晨两点半mysql数据库testdb备份到文件中
+  * 编写文件home/mytask2.sh
+    * /usr/local/mysql/bin/mysqldump -u root -proot testdb > /tmp/mydb.bak
+    * 给执行权限
+    * crontab -e
+    * 0 2 * * * /home/mytask2.sh
+
+* service crond restart  重启任务调度
+
+---
+
+## Linux磁盘分区和挂载
+
+* 分区有主分区和逻辑分区
+* mbr分区
+  * 最多支持四个主分区，系统只能安装在主分区，拓展分区要占一个主分区，mbr最大只支持2TB但是兼容性最好
+* gpt分区
+  * 支持无限个主分区（windows最多支持128个分区），最大支持18EB的容量，windows7 64位后支持gpt
+
+* Linux无论有多少分区，分给哪个目录，终归只有一个根目录，唯一的文件结构；Linux采用载入的处理方法，mount将磁盘挂在在文件上。
+
+* 在Linux中，硬盘基本为scsi硬盘。标识符为hdx~的是IDE硬盘，x为盘号（a为基本盘，b基本从属盘，c辅助主盘，d辅助从属盘），~表示分区，前四个分区1-4表示。而scsi硬盘表示为sdx~。
+  * lsblk -f  查看硬盘分区和挂载情况  （老师不离开 ）
+
+* **增加一块硬盘挂载在/home/newdisk**
+
+  1. 挂载一个硬盘，然后重启，lsblk查看硬盘
+
+  2. fdisk /dev/sdb ,m打开指令列表，n添加一个新分区，选择区号1，w把disk写入表并离开
+
+![image-20200518221614182](.\images\sdb分区.png)
+
+   * 此时分区完成，但没有格式化
+
+     3. mkfs -t ext4 /dev/sdb1     把sdb1格式化成ext4格式
+     4. 挂载  先创建一个目录 mkdir /home/newdisk
+        * mount /dev/sdb1  /home/newdisk    挂载硬盘到newdisk文件
+        * 重启机器后挂载实效
+
+     5. 实现永久挂载
+        * vim /etc/fstab
+        * 添加一行
+        * mount -a  自动挂载
+
+![image-20200518222727704](.\images\挂载修改配置文件.png)
+
+* umont /dev/sdb1  或 umount /newdisk
+
+* 查看磁盘 df -h
+* du -h  /目录   查看指定目录的占用情况
+  * -a 含文件  -h带计量单位  -s指定目录占用大小汇总  --max-depth=1子目录深度
+  * 查询opt目录磁盘占用，深度为1   du -ach ---max-depth=1  /opt
+
+## 常用的指令
+
+* 统计home目录下文件的个数 ls -l  /home |grep "^-" | wc -l
+  * ^-开头的是文件，d开头的是文件夹 ，wc -l统计
+
+* 统计home目录下文件的个数，包括子目录的
+  * ls -lR  /home |grep "^-" |wc -l     R递归查询
+
+* 递归显示目录
+  * yum install tree   安装tree指令
+  * tree
+
+
+
+
+
+
+
+
+
+---
+
+# 进程管理
+
+* Linux每个程序都执行一个进程，每个进程都分配一个id号
+* 每个进程都对应一个父进程，这个父进程可以复制多个子进程
+* 每个进程都可能以两种方式存在，前台和后台，一般系统进程都是后台执行的
+* **ps查看目前系统中那些进程在执行**
+  * -a 所以进程信息  -u以用户格式显示进程信息  -x后台进程运行的参数
+
+![image-20200518225445056](.\images\进程信息.png)
+
+* ps -aux |grep sshd  过滤需要查找的进程
+
+![image-20200518225648130](.\images\ps指令详解png)
+
+* ps -ef  以全格式的形式查看进程的父进程（pid进程编号，ppid父进程编号）
+* **终止进程**
+  * kill和killall
+  * kill [选项] 进程号   -9表示强制终止
+    * kill 4010 ,先用 ps -aux |grep sshd 找到目标进程，然后kill
+  * killall gedit
+  * 强制kill一个终端 ps -aux |grep bash
+    * kill -9 4090 (bash的进程号)
+  * pstree 以树状形式展示进程
+    * -p 显示进程的pid
+    * -u 以用户的形式显示
