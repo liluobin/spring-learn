@@ -267,7 +267,7 @@
 
   * tar -zcvf  **a.tar.gz**  al.txt  a2.txt  把al和a2打包压缩成a.tar.gz
   * tar -zcvf myhome.tar.gz  /home/  把home目录整体打包压缩
-  * tar -zxvf  a.tar.gz  加压缩
+  * tar -zxvf  a.tar.gz  解压缩
   * tar -zxvf  a.tar.gz   -C  /opt/  解压到opt目录，目录必须存在
 
 # linux实操
