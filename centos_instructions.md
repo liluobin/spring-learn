@@ -18,7 +18,7 @@
 
 * 连接成功后文件名乱码解决方法：
 
-  ![image-20200517213043932](F:\onedrive_data\OneDrive - zju.edu.cn\git\spring-learn\images\image-20200517213043932.png)选项中勾选utf-8编码
+  ![image-20200517213043932](.\images\image-20200517213043932.png)选项中勾选utf-8编码
 
   
 
@@ -177,19 +177,24 @@
 ## 文件目录类
 
 * \>输出重定向
+  
   * ls -l '>' [文件] 将列表内容写入到文件，文件不存在则创建，会覆盖原来的文件
 * \>>追加
-  * ls -l '>>' [文件] 将列表内容追加在文件后面
-
+  
+* ls -l '>>' [文件] 将列表内容追加在文件后面
+  
 * echo "内容" [>|>>] [文件]  把内容写入到文件中
-  * echo [选项] [输出内容]  把内容输出到控制台   echo $PATH (输出环境变量)
-
+  
+* echo [选项] [输出内容]  把内容输出到控制台   echo $PATH (输出环境变量)
+  
 * head  显示文件开头部分
-  * head -n 5 [文件]
-
+  
+* head -n 5 [文件]
+  
 * \*tail 显示文件的尾部，用法与head类似
-  * **had -f [文件] 实时追中文档的所有更新** （常用）
-
+  
+* **tail -f [文件] 实时追中文档的所有更新** （常用）
+  
 * **ln 软连接符号，主要存放连接其他文件的路径**，类似windows的快捷方式
 
   * ln -s [原文件或目录] [软连接名]  ln -s /root linkToRoot
@@ -300,10 +305,9 @@
 ## 权限的介绍
 
 * **-rw-r--r--. 1 tom  police    0 5月  18 18:08 ok.txt**         ls -ahl 显示
-
-  * -表示普通文件，d 目录， l 软连接，c 字符设备（键盘鼠标），b 块文件（硬盘）
-
-  * rw- 表示文件所有者拥有的权限（r读，w写，x执行）
+* -表示普通文件，d 目录， l 软连接，c 字符设备（键盘鼠标），b 块文件（硬盘）
+  
+* rw- 表示文件所有者拥有的权限（r读，w写，x执行）
   * r-- 表示文件所在组的用户拥有的权限
   * 后面一个r--表示文件其他组用户拥有的权限
   * 1 如果是文件表示硬连接的数，如果是目录表示该目录的子目录有多少（包括.和..）
@@ -311,13 +315,13 @@
   * police文件所在组
   * 0 表示文件大小，如果是目录则是4096
   * 5月 18 18：08 文件最后的修改时间
-
+  
 * **w代表文件可写，但是不能删除，除非w作用在目录上则可以删除文件**
 * **x作用在目录上则表示可以进入该目录，r作用在目录上可以ls查看**
 
 * 权限管理，修改文件或者目录权限
   * u代表所有者  g  所有组   o其他人   a所有人（a、g、u的总和）
-  * chmod u=wrx,g=rx.o=rw  ok.txt
+  * chmod u=wrx,g=rx,o=rw  ok.txt
   * chmod u -x ,g +w  ok.txt  （添加写权限和删除执行权限）
   * 规则： r=4,w=2,x=1
     * chmod u=rwx,g=rx,o=x  ok.txt   相当于chmod 751 ok.txt   (rwx可以看做二进制位)
@@ -416,13 +420,31 @@
   * yum install tree   安装tree指令
   * tree
 
+---
 
+## 网络配置-NAT模式（网络地址转换模式）环境
 
+![image-20200522151500338](.\images\NAT网络.png)
 
+* 修改ip地址
+  * 查看ip地址，linux: ifconfig       windows: ipconfig
+  * 如果修改虚拟机的ip地址，则需修改虚拟机设置中VMnet8的ip地址
 
+* 查询连接：ping  [ip地址]
 
+  ### centos设置自动连接网络
 
+  系统-首选项-选定网卡-编辑-勾选自动连接
 
+  ![image-20200522155735693](.\images\网络连接.png)
+
+  * 缺点：每次启动自动获取动态ip，但每次的ip都不一样（不适合做为服务器）
+
+* 使用固定的ip地址
+  * 直接修改配置文件，并可以连接到外网
+  * 编辑vim /etc/sysconfig/network-scripts/fcfg-eth0
+    * 要求：将ip地址配置为静态，如：192.168.184.101
+    * 在文件中将bootproto设置为static，onboot为yes，然后设置ip地址、网关、dns（dns和网关设置相同即可）。然后重启服务service network restart。
 
 ---
 
@@ -451,3 +473,75 @@
   * pstree 以树状形式展示进程
     * -p 显示进程的pid
     * -u 以用户的形式显示
+
+* **服务管理**
+  * service [服务名]  [start |stop | restart | reload | status]
+  * 在centos7.0后不再使用service，而使用systemctl，用法类似
+  * setup 可以选择自动启动各种服务
+    * 或者查看etc/init.d/
+
+![image-20200523161432459](.\images\系统服务.png)
+
+* 服务的运行级别0~6七种
+
+  * vim /etc/inittab（每个服务对每个运行级别都会设置一个是否自启动）
+
+  * chkconfig 可以给每个运行级别设置自启动或关闭
+    * chkconfig [服务名]  --list | grep xxx
+    * chkconfig [服务名]  --list
+    * chkconfig  --level  5  服务名  on/off
+
+---
+
+## 进程监控
+
+### 动态监控进程
+
+* 指令：top，与ps不同在于top在执行一段时间可以更新正在运行的进程
+* top [选项]
+
+![image-20200523163857171](.\images\top用法_u.png "u")
+
+
+
+<img src=".\images\top用法_k.png" alt="image-20200523164019702" title="k" />
+
+* top -d 10   每隔10秒刷新
+* 按q退出 ， 按P以cpu使用率排序，M以内存使用率排序，N以PID排序
+
+### 监控网络状态
+
+- netstat [选项]
+
+* netstat -anp   -an按一定顺序显示，-p显示哪个进程在调用
+
+---
+
+# RPM包管理和yum
+
+* rpm：用于互联网下载包的打包及安装工具，Redhat Package Manager 类似于windows的setup.ext，（suse，redhat，centos等）都使用rpm。
+
+* 查询已安装的rpm列表：rpm -qa|grep xx
+* rpm -qi  [软件名]     查询安装rpm软件信息
+* rpm -ql [软件名]      查询软件包中有哪些文件
+* rpm -qf  [文件]         查询文件属于哪个rpm包
+* rpm -e  [rpm包名]     删除软件包
+
+* rpm 强制删除
+  * ![image-20200523170556171](.\images\rpm强制删除.png)
+
+* 安装rpm包
+  * i 安装 ， v  提示 ， h 进度条
+    * 先找到安装包，挂载上安装centos的iso文件，在/media/目录
+    * 进入/media/目录，找到要安装的rpm包，用cp复制到/opt/路径
+    * 再切换到/opt/路径，用rpm -ivh  [包名] 安装
+
+### yum
+
+* 是一个shell前端软件包管理器，基于rpm，能从指定的服务器下载rpm包并安装，可以自动处理依赖性关系，并且一次安装所有依赖的软件包。
+* 查询yum服务器是否有需要安装的软件
+  * yum  list|grep XXX               **没有-**
+
+* 安装指定的yum包
+  * yum install XXX
+

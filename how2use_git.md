@@ -18,7 +18,7 @@ git add newfile.md    or   git add .
 //提交修改
 git commit -m "修改的描述信息" newfile.md
     
-//撤回提交：回回复到未添加修改的状态
+//撤回提交：回复到未添加修改的状态
 git reset head newfile.md
 git rm --cached newfile.md
 ```
