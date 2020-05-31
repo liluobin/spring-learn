@@ -400,12 +400,9 @@ String getValue）获取Cookie的value
 session：
 
 * 保存在服务器
-
-				* 保存的数据是Object
-				* 会随着会话的结束而销毁
-				* 保存重要信息
-
-
+* 保存的数据是Object
+* 会随着会话的结束而销毁
+* 保存重要信息
 
 cookie：
 
@@ -416,7 +413,7 @@ cookie：
 * 可以长期保存在浏览器中，与会话无关
 * 保存不重要信息
 
-session:setAtribute（name，"admin"）存
+session:setAttribute（name，"admin"）存
 
 ​                getAttribute（name）取
 
@@ -442,3 +439,231 @@ for(Cookie cookie: cookies){
 ​					生命周期：不随服务端的重启而销毁，客户端：默认是只要关闭浏览器就销毁，我们通过 setMaxAge0方法设置有效期，一旦设置了有效期，则不随浏览器的关闭而销毁，而是由设置的时间来决定。
 
 ​                    退出登录：setMaxAge（0）
+
+### JSP内置对象作用域
+
+page、request、session、application
+
+setAttribute、getAttribute
+
+page作用域：对应的内置对象是pageContext。
+
+request作用域：对应的内置对象是request。
+
+session作用域：对应的内置对象是session。
+
+application作用域：对应的内置对象是application。
+
+page<request<session < application
+
+page 只在当前页面有效。
+
+request在一次请求内有效。
+
+session在一次会话内有效。
+
+application 对应整个WEB应用的。
+
+
+
+### EL表达式
+
+Expression Language表达式语言，替代JSP页面中数据访问时的复杂编码，可以非常便捷地取出域对象（pageContext、request、session、application）中保存的数据，前提是一定要先 setAttribute，EL就相当于在简化getAttribute
+
+${变量名}，变量名就是setAttribute中的key值。
+
+1. EL对于4种域对象的默认查找顺序：
+
+   pageContext->request->session->application
+
+   按照上述的顺序进行查找，找到立即返回，在application中也无法找到，则返回nul
+
+2. 指定作用域进行查找
+
+   pageContext:$(pageScope.name}
+
+   request:${requestScope.name}
+
+   session:$(sessionScope.name}
+
+   application:${applicationScope.name}
+
+   * 也可以查看类的级联信息${Student.id}   **注意.id绑定的是getId方法，并不是student实例对象的属性**，等同于getAttribute("Student").getId()
+
+EL执行表达式
+
+&&||!<><=<===,and  or  not  eq  ne   <lt   >gt    <=le   >=ge    empty 
+
+${num1>num2}
+
+${empty num3}
+
+
+
+### JSTL
+
+JSP Standard Tag LibraryJSP标准标签库，JSP为开发者提供的一系列的标签，使用这些标签可以完成一些逻辑处理，比如循环遍历集合，让代码更加简洁，不再出现JSP脚本穿插的情况。
+
+实际开发中EL和JSTL结合起来使用，JSTL侧重于逻辑处理，EL负责展示数据。
+
+JSTL的使用
+
+1、需要导入jar包（两个jstl.jar standard.jar）  存放的位置 web/WEB-INF
+
+2、在JSP页面开始的地方导入JSTL标签库
+
+```jsp
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+```
+
+3、在需要的地方使用
+
+```jsp
+<c:forEach items="${list}" var="user">
+	<tr>
+		<td>S{user.id}</td>
+		<td>${user.name}</td>
+		<td>S{user.score}</td>
+		<td>S{user.address.value}</td>
+	</tr>
+</c:forEach>
+```
+
+JSTL优点：
+1、提供了统一的标签
+2、可以用于编写各种动态功能
+
+
+
+常用标签：
+
+* set、out、remove、catch
+
+set：向域对象中添加数据
+
+```jsp
+<c:set var="name" value="tom"></c:set>
+等效于：
+request.setAttribute("name",tom);
+
+<%
+   User user= new User(1,"张三",66.6);
+   request.setAttribute("user",user);
+%>
+不能存入对象，只能修改已存入对象的属性：
+<c:set target="${user}" property="name" value="李四“></c:set>
+```
+
+out：输出域对象中的数据
+
+```jsp
+<c:out value="${name}" default="未定义“></c:out>
+```
+
+remove：删除域对象中的数据
+
+```jsp
+<c:remove var="name" scope="page"</c:remove>
+```
+
+catch：捕获异常
+
+```jsp
+<c:catch var="error">
+	<%
+		int a=10/0;
+	%>
+</c:catch> 
+${error}
+```
+
+* 条件标签：if choose
+
+```jsp
+<c:set var="num1" value="1"></c:set>
+<c:set var="num2" value=1"2"></c:set>
+<c:if test="${numl>num2}">ok</c:if>
+<c:if test="${numl<num2}">fail</c:if>
+<hr/>
+<c:choose>
+	<c:when test="${numl>num2}">ok</c:when>
+	<c:otherwise>fail</c:otherwise>
+</c:choose>
+```
+
+* 迭代标签：foreach
+
+```jsp
+<c:forEach items="${list}" var="str" begin="2" end="3" step="2" varStatus="sta">
+	${sta.count}、${str}<br/>
+</c:forEach>
+```
+
+格式化标签库常用的标签：
+
+```jsp
+<%
+request. setAttribute("date", new Date());
+%>
+<fmt: formatDate value="S{ date)" pattern="yyyy-MM-dd HH: mm: ss"></fmt: formatDate><br/>
+<fmt: formatNumber value="32145.23434"maxIntegerDigits="2"maxFractionDigits="3">
+</fmt: formatNumber>
+```
+
+函数标签库常用的标签：
+
+```jsp
+<%
+request.setAttribute("info","Java,C");
+%>
+${fn:contains(info,"Python")}<br/>
+${fn:startswith(info,"Java")}<br/>
+${fn:endsWith(info,"C")}<br/>
+${fn:indexof(info,"va")}<br/>
+${fn:replace(info,"c","Python")y<br/>
+${fn:substring(info,2,3)}<br/>
+$(fn:split(info,",")[0]}-${fn:split(info,",")[1]}
+```
+
+
+
+## 过滤器
+
+Filter 功能：
+
+1、用来拦截传入的请求和传出的响应。
+
+2、修改或以某种方式处理正在客户端和服务端之间交换的数据流。
+
+如何使用？
+
+与使用Servlet类似，Filter是Java WEB提供的一个接口，开发者只需要自定义一个类并且实现该接口即可。
+
+```java
+package com. southwind. filter; import javax. servlet.*;
+import javax. servlet.*;
+import java. io. IOException;
+public class CharacterFilter implements Filter{
+@override
+	public void doFilter(ServletRequest servletRequest, ServletResponse 		servletResponse,FilterChain filterChain) throws IOException, ServletException{
+		servletRequest. setCharacterEncoding("UTF-8");
+		filterChain. doPilter(servletRequest, servletResponse);
+    }
+}
+```
+
+web.xml中配置 Filter
+
+```xml
+<filter>
+<filter-name>charcater</filter-name>
+<filter-class>com.southwind.filter.CharacterFilter</filter-class>
+</filter>
+<filter-mapping>
+<filter-name>charcater</filter-name>
+<url-pattern>/login</url-pattern>
+<url-pattern>/test</url-pattern>
+</filter-mapping>
+```
+
+注意：doFilter 方法中处理完业务逻辑之后，必须添加filterChain.doFilter（servletRequest，servlettResponse）；否则请求/响应无法向后传递，一直停留在过滤器中。
