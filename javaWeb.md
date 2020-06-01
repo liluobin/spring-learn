@@ -639,6 +639,8 @@ Filter 功能：
 
 与使用Servlet类似，Filter是Java WEB提供的一个接口，开发者只需要自定义一个类并且实现该接口即可。
 
+**注意：setCharacterEncoding 只对doPost方法有效，如果是get需要使用：new String(para.getBytes("UTF-8"), "ISO-8859-1");对获取到的中文参数进行处理 **
+
 ```java
 package com. southwind. filter; import javax. servlet.*;
 import javax. servlet.*;
@@ -647,7 +649,7 @@ public class CharacterFilter implements Filter{
 @override
 	public void doFilter(ServletRequest servletRequest, ServletResponse 		servletResponse,FilterChain filterChain) throws IOException, ServletException{
 		servletRequest. setCharacterEncoding("UTF-8");
-		filterChain. doPilter(servletRequest, servletResponse);
+		filterChain. doFilter(servletRequest, servletResponse);
     }
 }
 ```
@@ -667,3 +669,91 @@ web.xml中配置 Filter
 ```
 
 注意：doFilter 方法中处理完业务逻辑之后，必须添加filterChain.doFilter（servletRequest，servlettResponse）；否则请求/响应无法向后传递，一直停留在过滤器中。
+
+#### Filter的生命周期
+
+当Tomcat启动时，通过反射机制调用Filter的无参构造函数创建实例化对象，同时调用init 方法实现初始化，doFilter 方法调用多次，当Tomcat服务关闭的时候，调用destory 来销毁Filter对象。
+
+无参构造函数：只调用一次，当Tomcat 启动时调用（Filter一定要进行配置）
+
+init 方法：只调用一次，当Filter的实例化对象创建完成之后调用
+
+doFilter：调用多次，访问Filter的业务逻辑都写在Filter中
+
+destory：只调用一次，Tomcat关闭时调用。
+
+**同时配置多个Filter，Filter的调用顺序是由 web.xml中的配置顺序来决定的，写在上面的配置先调用，因为web.xml是从上到下顺序读取的。**
+
+如果用@WebFilter注解来自动配置，则不能指定filter的执行顺序，会随机执行。
+
+实际开发中Filter的使用场景：
+
+1、统一处理中文乱码。
+
+2、屏蔽敏感词。
+
+3、控制资源的访问权限。
+
+
+
+### 文件上传下载
+
+1. jsp
+
+   * input的 type 设置为file
+
+   * form表单的method 设置post，get请求会将文件名传给服务端，而不是文件本身
+   * form表单的 enctype 设置multipart/form-data，以二进制的形式传输数据
+
+2. Servlet
+   * fileupload 组件可以将所有的请求信息都解析成Fileltem对象，可以通过对Fileltem对象的操作完成上传，面向对象的思想。
+
+### 文件下载
+
+```java
+import Java.io.IOException;
+import java. io. InputStream;
+import java. io. outputStream;
+@WebServlet("/download")
+public class DownloadServlet extends HttpServlet{
+	@override
+	protested void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException，IOException{
+		String type=req.getParameter（"type"）；String fileName=""；
+		switch（type）{
+			case"png"：
+				fileName="1.png"；
+				break；
+			case"txt"：
+				fileName="test.txt"；
+				break；
+        }
+		//设置响应方式
+		resp.setContentType（"application/x-msdownload"）；
+		//设置下载之后的文件名
+		resp.setHeader（"Content-Disposition"，"attachment；			filename="+fileName）；
+        //获取输出流
+        OutputStream outputStream=resp.getoutputStream();
+        String path=req.getServletContext().getRealPath（"file/"+fileName）；
+		InputStream inputStream=new FileInputStream（path）;
+        int temp=0；
+		while（（temp=inputStream.read（））！=-1）{
+			outputStream.write（temp）;
+        }
+		inputStream.close（）；
+		outputStream.close（）；
+    }
+}
+```
+
+
+
+### Ajax
+
+Asynchronous JavaScript And XML：异步的JavaScript和XML
+
+AJAX不是新的编程，指的是一种交互方式，异步加载，客户端和服务器的数据交互更新在局部页面的技术，不需要刷新整个页面（局部刷新）
+
+优点：
+1、局部刷新，效率更高
+
+2、用户体验更好
