@@ -480,7 +480,7 @@ ${变量名}，变量名就是setAttribute中的key值。
 
 2. 指定作用域进行查找
 
-   pageContext:$(pageScope.name}
+   pageContext:${pageScope.name}
 
    request:${requestScope.name}
 
@@ -757,3 +757,57 @@ AJAX不是新的编程，指的是一种交互方式，异步加载，客户端�
 1、局部刷新，效率更高
 
 2、用户体验更好
+
+
+
+
+
+## JDBC
+
+Java DataBase Connectivity是一个独立于特定数据库的管理系统，通用的SQL数据库存取和操作的公共接口。
+
+定义了一组标准，为访问不同数据库提供了统一的途径。
+
+![image-20200602230511242](.\images\JDBC.png)
+
+#### JDBC体系结构
+
+JDBC接口包括两个层面：
+
+* 面向应用的API，供程序员调用
+* 面向数据库的APl，供厂商开发数据库的驱动程序
+
+JDBCAPI
+
+提供者：Java官方
+内容：供开发者调用的接口
+
+java.sql和javax.sql
+
+* DriverManager类
+* Connection接口
+* Statement接口
+* ResultSet接口
+
+DriverManager
+
+提供者：Java官方
+
+作用：管理不同的JDBC驱动
+
+JDBC驱动
+
+提供者：数据库厂商
+
+负责连接不同的数据库
+
+#### JDBC的使用
+
+1、加载数据库驱动，Java程序和数据库之间的桥梁
+
+2、获取Connection，Java程序与数据库的一次连接
+
+3、创建 Statement对象，由Connection产生，执行SQL语句
+
+4、如果需要接收返回值，创建ResultSet对象，保存Statement执行之后所查询到的结果。
+
