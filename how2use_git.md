@@ -69,3 +69,10 @@ git merge [branchname] //先进入master分支，然后用merge将分支合并�
 
 
 
+### 连接到多个远程仓库：
+
+https://blog.csdn.net/ManyPeng/article/details/77012468
+
+### 合作开发时push和合并分支的操作
+
+https://blog.csdn.net/qq_32337109/article/details/85566069

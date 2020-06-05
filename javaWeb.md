@@ -811,3 +811,148 @@ JDBC驱动
 
 4、如果需要接收返回值，创建ResultSet对象，保存Statement执行之后所查询到的结果。
 
+* 使用前先在web-info的lib中添加mysql-connector-java-8.0.11.jart
+
+```java
+package com.luobin.sql01;
+
+
+import java.sql.*;
+
+public class myDatabase {
+    public static void  main(String[] args){
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            String url="jdbc:mysql://localhost:3306/myemployees?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8";
+            String user ="root";
+            String password ="root";
+            Connection connection= DriverManager.getConnection(url,user,password);
+            String sql="select * from employees where employee_id between ? and ?";
+            PreparedStatement statement = connection.prepareStatement(sql);
+            //Statement statement= connection.createStatement();
+            statement.setInt(1,103);
+            statement.setInt(2,109);
+            ResultSet resultSet =statement.executeQuery();
+            while(resultSet.next()){
+                int id =resultSet.getInt("employee_id");
+                String name =resultSet.getString("last_name");
+                System.out.println("employee id:"+id+" name: "+name);
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+}
+```
+
+#### 使用ComboPooledDataSouce
+
+需要导入c3p0的jar包
+
+```java
+package com.luobin.sql01;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+public class DataSourceTest {
+    public static void main(String[] args) {
+        ComboPooledDataSource dataSource =new ComboPooledDataSource();
+        try {
+            dataSource.setDriverClass("com.mysql.cj.jdbc.Driver");
+            dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/myemployees?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8");
+            dataSource.setUser("root");
+            dataSource.setPassword("root");
+            Connection connection=dataSource.getConnection();
+            System.out.println(connection);
+
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+
+    }
+}
+```
+
+使用配置文件
+
+```java
+package com.luobin.sql01;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+public class DataSourceTest {
+    public static void main(String[] args) {
+        ComboPooledDataSource dataSource =new ComboPooledDataSource("testc3p0");
+        try {
+
+            Connection connection=dataSource.getConnection();
+            System.out.println(connection);
+
+        }
+        catch (SQLException e){
+            e.printStackTrace();
+        }
+
+    }
+}
+
+```
+
+src目录下的配置文件c3p0-cofig.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<c3p0-config>
+
+	<named-config name="testc3p0">
+		
+		<!-- 指定连接数据源的基本属性 -->
+		<property name="user">root</property>
+		<property name="password">root</property>
+		<property name="driverClass">com.mysql.jdbc.Driver</property>
+		<property name="jdbcUrl">jdbc:mysql://localhost:3306/myemployees?serverTimezone=Asia/Shanghai&amp;useUnicode=true&amp;characterEncoding=UTF-8</property>
+		
+		<!-- 若数据库中连接数不足时, 一次向数据库服务器申请多少个连接 -->
+		<property name="acquireIncrement">5</property>
+		<!-- 初始化数据库连接池时连接的数量 -->
+		<property name="initialPoolSize">5</property>
+		<!-- 数据库连接池中的最小的数据库连接数 -->
+		<property name="minPoolSize">5</property>
+		<!-- 数据库连接池中的最大的数据库连接数 -->
+		<property name="maxPoolSize">10</property>
+	
+	</named-config>
+		
+</c3p0-config>
+```
+
+
+
+
+
+### MVC
+
+是一种开发模式，将程序分层的一种思想。
+
+M:Model 业务数据（servcie、repository、entity）
+
+V:View视图（JSP、HTML、APP客户端）
+
+C:Controller控制（Servlet、Handler、Action）
+
+请求进入Java Web应用后，Controller接收该请求，进行业务逻辑处理，最终将处理的结果再返回给用户（View+Model）
+
+Controller-->Service-->Repository
